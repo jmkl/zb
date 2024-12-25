@@ -68,7 +68,7 @@ jobs:
       if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/auto-release')
       with:
         name: Nightly - Current
-        body: This release always contains the newest nightly artifacts.
+        body:  ${{ github.event.head_commit.message }}
         tag_name: nightly
         prerelease: true
         files: |
@@ -79,7 +79,7 @@ jobs:
       if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/auto-release')
       with:
         name: Nightly ${{ steps.set-date.outputs.CURRENT_DATE }}
-        body: Automated nightly release of Zed
+        body:  ${{ github.event.head_commit.message }}
         tag_name: "nightly-${{ steps.set-date.outputs.CURRENT_DATE }}"
         prerelease: true
         files: |
