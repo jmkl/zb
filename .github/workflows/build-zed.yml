@@ -44,6 +44,13 @@ jobs:
         files: |
           target/release/Zed.exe
 
+    - name: Get latest commit
+      shell: pwsh
+      id: commit_message
+      run: |
+        $GIT_MESSAGE = git log -1 --pretty
+        echo "GIT_MESSAGE=$GIT_MESSAGE" >> $env:GITHUB_ENV
+        echo "GIT_MESSAGE=$GIT_MESSAGE" >> $env:GITHUB_OUTPUT
     - name: Attest build provenance
       uses: actions/attest-build-provenance@v1
       with:
@@ -67,20 +74,9 @@ jobs:
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/auto-release')
       with:
-        name: Nightly - Current
-        body:  ${{ github.event.head_commit.message }}
+        name: Nightly Build
+        body: "Releasing ${{ steps.commit_message.outputs.GIT_MESSAGE }}"
         tag_name: nightly
-        prerelease: true
-        files: |
-          target/release/Zed.exe
-
-    - name: Release Nightly
-      uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/auto-release')
-      with:
-        name: Nightly ${{ steps.set-date.outputs.CURRENT_DATE }}
-        body:  ${{ github.event.head_commit.message }}
-        tag_name: "nightly-${{ steps.set-date.outputs.CURRENT_DATE }}"
         prerelease: true
         files: |
           target/release/Zed.exe
