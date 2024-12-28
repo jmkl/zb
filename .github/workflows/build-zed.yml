@@ -1,6 +1,9 @@
 name: Build Zed
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
   schedule:
     - cron: "0 2 * * *"
@@ -33,8 +36,6 @@ jobs:
       with:
         arch: x64
         
-    - name: Rust Cache
-      uses: Swatinem/rust-cache@v2
 
     - name: Run cargo
       run: cargo build --release
@@ -51,24 +52,19 @@ jobs:
         $GIT_MESSAGE = git log -1 --pretty
         echo "GIT_MESSAGE=$GIT_MESSAGE" >> $env:GITHUB_ENV
         echo "GIT_MESSAGE=$GIT_MESSAGE" >> $env:GITHUB_OUTPUT
-    - name: Attest build provenance
-      uses: actions/attest-build-provenance@v1
-      with:
-        subject-path: 'target\release\Zed.exe'
-
+    - name: Zip the thing
+      run: |
+          Compress-Archive -Path target/release/Zed.exe -DestinationPath Zed.zip
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
-        name: zed
+        name: zed.exe
         path: target\release\Zed.exe
-
-    - name: Set date
-      id: set-date
-      shell: pwsh
-      run: |
-        $CURRENT_DATE = Get-Date -UFormat "%Y.%m.%d"
-        echo "CURRENT_DATE=$CURRENT_DATE" >> $env:GITHUB_ENV
-        echo "CURRENT_DATE=$CURRENT_DATE" >> $env:GITHUB_OUTPUT
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: zed.zip
+        path: Zed.zip
         
     - name: Update Nightly Current
       uses: softprops/action-gh-release@v2
@@ -80,3 +76,5 @@ jobs:
         prerelease: true
         files: |
           target/release/Zed.exe
+          Zed.zip
+
